@@ -9,35 +9,31 @@ import numpy as np
 import time
 import sys
 import serialize
+from LL2UTM import LL2UTM_USGS
 
 class Flow(object):
-    def __init__(self, fid, c, t):
+    def __init__(self, fid, c, t, w=1):
         self.fid = fid
         self.c = np.array(c)
         self.t = np.array(t)
+        self.w = w
 
 # read OD coordinates
 def readData(fileName):
-    data = []
-    w = []
-    lst = []
-    let = []
+    flows = []
     
-    with open(fileName, 'rb') as f:
+    with open(fileName, 'r') as f:
         while True:
-            line = f.readline()
+            line = f.readline().strip()
             if line:
                 sl = line.split(',')
-                if len(sl) > 1:
-                    d = [float(sl[1]),float(sl[2]),float(sl[3]),float(sl[4])]
-                    data.append(d)
-                    lst.append(int(sl[5]))
-                    let.append(int(sl[6]))
-                    w.append(int(sl[-1]))
+                ox, oy = LL2UTM_USGS(float(sl[2]), float(sl[1]))
+                dx, dy = LL2UTM_USGS(float(sl[4]), float(sl[3]))
+                flows.append(Flow(int(sl[0]), [(ox,oy),(dx,dy)], [float(sl[5]), float(sl[6])]))
             else:
                 break
 
-    return data, lst, let, w
+    return flows
 
 # compute the spatio-temporal similarity between flows f1 and f2
 def flowSim(f1, f2, dt=0):
@@ -57,9 +53,18 @@ def flowSim(f1, f2, dt=0):
 
     return (t[2]-t[1])/(t[3]-t[0])*np.exp(-0.5*np.sqrt(np.sum((c2-c1)**2)/(np.sum((c1[1]-c1[0])**2)*np.sum((c2[1]-c2[0])**2))))
 
+# compute the similarity matrix
+def calcSimMt(flows, dt):
+    fnum = len(flows)
+    simMatrix = np.zeros((fnum, fnum))
+    for i in range(fnum):
+        for j in range(i+1, fnum): # reserve upper triangular matrix only
+            simMatrix[i, j] = flowSim(flows[i], flows[j], dt)
+
+    return simMatrix
 
 # compute the similarity between clusters c1 and c2
-def clusterSim(ci, cj, data, alpha):
+def clusterSim(ci, cj, simMatrix):
     oix, oiy, dix, diy = calcClusterFlow(ci, data)
     ojx, ojy, djx, djy = calcClusterFlow(cj, data)
 
@@ -67,20 +72,18 @@ def clusterSim(ci, cj, data, alpha):
     vj = [djx-ojx, djy-ojy]
     return flowSim(vi, vj, alpha)
 
-# merge similar clusters
+# merge similar clusters, and keep the smaller cluster ID
 def merge(c, ci, cj, l):
-    #保留小数字的clusterID
     if ci > cj:
         ci, cj = cj, ci
-        
-    for lid in c[cj]:
-        l[lid] = ci
-        c[ci].append(lid)
+
+    l[np.where(l==cj)] = ci
+    c[ci].add(c[cj])
     c.pop(cj)
     
 
 # output clustering result - clustered flows
-def outputSLabeledData(filename, data, l, lst, let, w):
+def outputSLabeledData(filename, flows, l):
     flows = []
     for i in range(len(data)):
         r = [i]
@@ -102,6 +105,7 @@ def outputSClusterData(filename, data, c):
             clusters.append([i, ox, oy, dx, dy, len(c[i])])
     serialize.serialize(clusters, filename, header=['clusterID','ox','oy','dx','dy','st','et','w'])
 
+
 if __name__ == '__main__':
     print('Running ', sys.argv[0])
 
@@ -116,31 +120,37 @@ if __name__ == '__main__':
     print('dt =', dt, '; sim threshold =', simTh)
 
     startTime = time.clock()
-    #----------------------------初始化------------------------------------
+    #----------------------------initialize------------------------------------
     print('\ninitialize...')
-    data, lst, let, w = readData(dataFile)
-    dataLen = len(data)
-    c = {} #类集合
-    l = [] #数据标签集合
+    flows = readData(dataFile)
+    simMatrix = calcSimMt(flows, dt)
+    print('  computing sim matrix costs %.2f mins' % ((time.clock() - startTime) / 60.0))
 
-    #----------------------------空间聚类----------------------------------
     # 初始化时第i类只包括第i个数据，第i个数据的数据标签为第i类
-    for i in range(dataLen):
-        c[i] = [i]  # 类编号(整数编号)，包含的流编号
-        l.append(i)  # 流的类标签
+    clusters = {i:{i} for i in range(len(flows))} #类集合
+    l = np.arange(len(flows)) #数据标签集合
 
+    #----------------------------clustering----------------------------------
     print('start clustering...')
     st = time.clock()
-    for i in range(dataLen):
-        if i%5000 == 0:
-            et = time.clock()
-            print i, '%.2f' % ((et-st)/60.0), 'mins'
-            st = et
 
-        for j in knn:
-            if l[i] != l[j]: #如果第i条流和第j条流不属于同一类
-                if not (clusterSim(c[l[i]], c[l[j]], data, alpha) > 1):
-                    merge(c, l[i], l[j], l)
+    rIdx, cIdx = np.where(simMatrix >= simTh)
+    dIdx = np.where(rIdx > cIdx)
+    rIdx, cIdx = np.delete(rIdx, dIdx), np.delete(cIdx, dIdx)
+    order = np.argsort(simMatrix[rIdx, cIdx].flatten())[::-1]
+
+    count = 0
+    for i, j in zip(rIdx[order], cIdx[order]):
+        # show time costs
+        if count % 2000 == 0:
+            et = time.clock()
+            print(count, '%.2f mins' % ((et-st)/60.0))
+            st = et
+        count += 1
+
+        if l[i] != l[j]:
+            if clusterSim(clusters[l[i]], clusters[l[j]], simMatrix) >= simTh:   #如果第i条流和第j条流不属于同一类
+                merge(clusters, l[i], l[j], l)
               
     if os.path.exists(ldataFile):
         os.remove(ldataFile)
@@ -151,4 +161,4 @@ if __name__ == '__main__':
     outputSClusterData(clusterFile, data, c)
 
     endTime = time.clock()
-    print('Total running time: %.2f' % ((endTime-startTime)/3600.0), 'hours')
+    print('Total running time: %.2f mins' % ((endTime-startTime)/60))

@@ -27,9 +27,14 @@ def output(fileName, flows):
 
 if __name__ == '__main__':
     flows = []
-    flows.extend(genSimData(5,(0,3),(0,3),(27,30),(27,30),(0,3),(10,13)))
-    flows.extend(genSimData(5,(0,3),(0,3),(27,30),(27,30),(7,10),(17,20)))
-    flows.extend(genSimData(4,(0,3),(10,13),(2,5),(21,24),(4,7),(12,15)))
+    flows.extend(genSimData(5,(0,3),(0,3),(22,25),(22,25),(0,3),(20,23)))
+    flows.extend(genSimData(5,(0,3),(0,3),(22,25),(22,25),(17,20),(37,43)))
+    flows.extend(genSimData(3,(45,48),(45,48),(37,40),(13,16),(4,7),(12,15)))
+    flows.extend(genSimData(3,(37,40),(13,16),(45,48),(45,48),(4,7),(12,15)))
+    flows.extend(genSimData(4,(33,37),(42,45),(8,11),(40,43),(12,16),(46,50)))
+    flows.extend(genSimData(1,(0,2),(42,45),(43,46),(3,7),(4,10),(25,30)))
+    flows.extend(genSimData(1,(30,32),(1,4),(28,30),(46,49),(28,30),(38,42)))
     #for flow in flows:
     #    print(flow)
-    draw.drawFromData(flows)
+    #draw.drawFromData(flows)
+    output('./data/simdata.csv', flows)

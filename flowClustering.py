@@ -4,7 +4,6 @@
 
 __author__ = 'Xin Yao'
 
-import os
 import numpy as np
 import time
 import sys
@@ -23,6 +22,7 @@ def readData(fileName, co2xy = True):
     flows = []
     
     with open(fileName, 'r') as f:
+        f.readline()
         if co2xy:
             while True:
                 line = f.readline().strip()
@@ -62,11 +62,15 @@ def flowSim(f1, f2, dt=0):
     c1 = r1[:, np.newaxis] * (f1.c[1] - f1.c[0]) + f1.c[0]
     c2 = r2[:, np.newaxis] * (f2.c[1] - f2.c[0]) + f2.c[0]
 
-    return (t[2]-t[1])/(t[3]-t[0])*np.exp(-0.5*np.sqrt(np.sum((c2-c1)**2)/(np.sum((c1[1]-c1[0])**2)*np.sum((c2[1]-c2[0])**2))))
+    w = (t[2] - t[1]) / (t[3] - t[0])
+    return w * np.exp(-0.5 * np.sqrt(
+        np.sum((c2 - c1) ** 2) / (np.sqrt(np.sum((c1[1] - c1[0]) ** 2)) * np.sqrt(np.sum((c2[1] - c2[0]) ** 2)))))
 
 # compute the similarity matrix. simMatrix[i, i] is 1 and not reserved
 def calcSimMt(dataFile, dt, co2xy=True):
     flows = readData(dataFile, co2xy)
+    print(flowSim(flows[13], flows[14]))
+
     fnum = len(flows)
     simMatrix = np.zeros((fnum, fnum))
     for i in range(fnum):
@@ -86,13 +90,13 @@ def merge(clusters, ci, cj, labels):
         ci, cj = cj, ci
 
     labels[np.where(labels==cj)] = ci
-    clusters[ci].add(clusters[cj])
+    clusters[ci].update(clusters[cj])
     clusters.pop(cj)
 
 # calculate the mean flow of a cluster
 def calcClusterFlow(clusterFlowSet, flows):
-    c = np.array([[0,0], [0,0]])
-    t = np.array([0, 0])
+    c = np.array([[0,0], [0,0]], dtype=np.float)
+    t = np.array([0, 0], dtype=np.float)
     for fidx in clusterFlowSet:
         c += flows[fidx].c
         t += flows[fidx].t
@@ -113,7 +117,8 @@ def outputResults(clusterFile, ldataFile, dataFile, clusters, l, co2xy):
 
     data = []
     for i, flow in enumerate(flows):
-        data.append([*flow, l[i]])
+
+        data.append([flow.fid, *flow.c.flatten(), *flow.t.flatten(), l[i]])
     serialize.serialize(data, ldataFile, header = ['fid','x1','y1','x2','y2','st','et', 'cluster'] )
 
 # get row-column pairs, when the corresponding flow sim >= simTh
@@ -157,26 +162,24 @@ if __name__ == '__main__':
     print('\n----parameter setting----')
     dt = 0
     simTh = 0.7
-    dataFile = './data/f_td_0513_processed.csv'
+    dataFile = './data/simdata.csv'
     print('  file: ', dataFile)
-    print('  dt =', dt)
+    print('  delta time =', dt)
     print('  similarity threshold =', simTh)
 
     #----------------------------clustering------------------------------------
     print('\n----clustering----')
     startTime = time.clock()
-    clusters, labels = clustering(dataFile, dt, simTh, co2xy=True)  # True: trasform lon-lat to xy coordinates
+    clusters, labels = clustering(dataFile, dt, simTh, co2xy=False)  # True: trasform lon-lat to xy coordinates
     print('  time for clustering: %.2f mins' % ((time.clock()-startTime)/60))
 
     # ----------------------------output--------------------------------------
     print('\n----output results----')
-    ldataFile = './data/lf_0513_' + str(dt) + '_' + str(simTh) + '.csv'
-    clusterFile = './data/c_0513_' + str(dt) + '_' + str(simTh) + '.csv'
-    if os.path.exists(ldataFile):
-        os.remove(ldataFile)
-    if os.path.exists(clusterFile):
-        os.remove(clusterFile)
+    ldataFile = './data/lf_sim_' + str(dt) + '_' + str(simTh) + '.csv'
+    clusterFile = './data/c_sim_' + str(dt) + '_' + str(simTh) + '.csv'
 		
-    outputResults(clusterFile, ldataFile, dataFile, clusters, labels, co2xy=False)
+    #outputResults(clusterFile, ldataFile, dataFile, clusters, labels, co2xy=False)
+    print('\nclustering completed.')
+
 
 

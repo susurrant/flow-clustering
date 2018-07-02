@@ -6,6 +6,10 @@ __pycache__/
 .vscode
 .DS_Store
 
+data/
+map/
+实验流程.docx
+
 # C extensions
 *.so
 

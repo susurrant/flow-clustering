@@ -116,12 +116,6 @@ def temporalClustering(ldataFile, clusterID, thredshold, output = 'True'):
     print('Total running time: %.2f' % (time.clock() - startTime), 'seconds')
     print('--------------------------')
 
-    nflc = 0
-    for cid in c:
-        if len(c[cid]) > nflc:
-            nflc=len(c[cid])
-    return len(c), nflc
-
 if __name__ == '__main__':
     print('Running ', sys.argv[0])
 
@@ -129,15 +123,4 @@ if __name__ == '__main__':
     thredshold = 0.5
     clusterID = 318
 
-    '''
-    ncs = []
-    nflcs = []
-    for i in range(11):
-        thredshold = i/10.0
-        nc, nflc = temporalClustering(ldataFile, clusterID, thredshold, 'False')
-        ncs.append(nc)
-        nflcs.append(nflc)
-    print ncs
-    print nflcs
-    '''
-
+    temporalClustering(ldataFile, clusterID, thredshold)

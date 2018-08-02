@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-：
+# python 2.7
 
 import csv
 import random
@@ -146,7 +147,7 @@ if __name__ == '__main__':
     # sample()
 
 
-    path = 'W:\\Projects\\Spatio-temporal clustering of flow data\\program\\'
+    path = './data/'
 
     # sourceFile = 'taxi data(May 13)_raw.csv'
     # dataFile = 'taxi data(May 13)_processed.csv'

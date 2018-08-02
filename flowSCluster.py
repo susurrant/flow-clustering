@@ -1,4 +1,4 @@
-# -*- coding: cp936 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import math
@@ -8,7 +8,7 @@ import time
 import sys
 
 
-#¶ÁÈ¡ODµã×ø±ê
+#è¯»å–ODç‚¹åæ ‡
 def readData(fileName):
     data = []
     w = []
@@ -31,7 +31,7 @@ def readData(fileName):
 
     return data, lst, let, w
 
-#¼ÆËãµÚi¸öÊý¾ÝÖÐµãµÄk¸ö½üÁÚµã,·µ»Ø½üÁÚµãÐòºÅÁÐ±í
+#è®¡ç®—ç¬¬iä¸ªæ•°æ®ä¸­ç‚¹çš„kä¸ªè¿‘é‚»ç‚¹,è¿”å›žè¿‘é‚»ç‚¹åºå·åˆ—è¡¨
 def KNN(i, k):
     conn = psycopg2.connect(database="flow clustering", user="postgres", password="123", host='localhost', port="5432")
     cur = conn.cursor()
@@ -48,7 +48,7 @@ def KNN(i, k):
     conn.close()
     return n
 
-#¼ÆËãclusterµÄÖÐÐÄÁ÷×ø±ê
+#è®¡ç®—clusterçš„ä¸­å¿ƒæµåæ ‡
 def calcClusterFlow(c, data):
     ox = 0
     oy = 0
@@ -76,7 +76,7 @@ def flowSim(vi, vj, alpha):
     else:
         return dv/(alpha*lenj)
 
-#¼ÆËãclusterIDÎªciºÍcjµÄÁ½¸öÀàµÄÏàËÆÐÔ
+#è®¡ç®—clusterIDä¸ºciå’Œcjçš„ä¸¤ä¸ªç±»çš„ç›¸ä¼¼æ€§
 def clusterSim(ci, cj, data, alpha):
     oix, oiy, dix, diy = calcClusterFlow(ci, data)
     ojx, ojy, djx, djy = calcClusterFlow(cj, data)
@@ -85,9 +85,9 @@ def clusterSim(ci, cj, data, alpha):
     vj = [djx-ojx, djy-ojy]
     return flowSim(vi, vj, alpha)
 
-#ºÏ²¢ÏàËÆ¶È¸ßµÄÀà
+#åˆå¹¶ç›¸ä¼¼åº¦é«˜çš„ç±»
 def merge(c, ci, cj, l):
-    #±£ÁôÐ¡Êý×ÖµÄclusterID
+    #ä¿ç•™å°æ•°å­—çš„clusterID
     if ci > cj:
         ci, cj = cj, ci
         
@@ -97,7 +97,7 @@ def merge(c, ci, cj, l):
     c.pop(cj)
     
 
-#Êä³ö´øÀà±êÇ©µÄODÊý¾Ýµ½csv¸ñÊ½ÎÄ¼þ
+#è¾“å‡ºå¸¦ç±»æ ‡ç­¾çš„ODæ•°æ®åˆ°csvæ ¼å¼æ–‡ä»¶
 def outputSLabeledData(filename, data, l, lst, let, w):
     rf = open(filename, 'w', newline='')
     sheet = csv.writer(rf)
@@ -113,7 +113,7 @@ def outputSLabeledData(filename, data, l, lst, let, w):
     rf.close()
 
 
-#Êä³ö¿Õ¼äÀàÊý¾Ý£¬°üÀ¨clusterID£¬ÀàÖÐÐÄÁ÷×ø±ê£¬°üº¬µÄÁ÷µÄ¸öÊý
+#è¾“å‡ºç©ºé—´ç±»æ•°æ®ï¼ŒåŒ…æ‹¬clusterIDï¼Œç±»ä¸­å¿ƒæµåæ ‡ï¼ŒåŒ…å«çš„æµçš„ä¸ªæ•°
 def outputSClusterData(filename, data, c):
     rf = open(filename, 'w', newline='')
     sheet = csv.writer(rf)
@@ -129,9 +129,9 @@ if __name__ == '__main__':
     print('Running ', sys.argv[0])
     startTime = time.clock()
 
-    #¿Õ¼ä¾ÛÀà²ÎÊý  
-    alpha = 0.55     # ±ß½çÔ²³ß¶ÈÏµÊý
-    K = 25           # ½üÁÚÊý
+    #ç©ºé—´èšç±»å‚æ•°  
+    alpha = 0.55     # è¾¹ç•Œåœ†å°ºåº¦ç³»æ•°
+    K = 25           # è¿‘é‚»æ•°
     dataFile = 'taxi data(May 13)_processed.csv'
     ldataFile = 's_ld(May 13) '+str(K)+' '+str(alpha)+'.csv'
     clusterFile = 's_c(May 13) '+str(K)+' '+str(alpha)+'.csv'
@@ -139,19 +139,19 @@ if __name__ == '__main__':
     print('file: ', dataFile)
     print('alpha =', alpha, '; k =', K)
 
-    #----------------------------³õÊ¼»¯------------------------------------
+    #----------------------------åˆå§‹åŒ–------------------------------------
     print('\ninitialize...')
     data, lst, let, w = readData(dataFile)
     dataLen = len(data)
-    c = {} #Àà¼¯ºÏ
-    l = [] #Êý¾Ý±êÇ©¼¯ºÏ
+    c = {} #ç±»é›†åˆ
+    l = [] #æ•°æ®æ ‡ç­¾é›†åˆ
 
 
-    #----------------------------¿Õ¼ä¾ÛÀà----------------------------------
-    # ³õÊ¼»¯Ê±µÚiÀàÖ»°üÀ¨µÚi¸öÊý¾Ý£¬µÚi¸öÊý¾ÝµÄÊý¾Ý±êÇ©ÎªµÚiÀà
+    #----------------------------ç©ºé—´èšç±»----------------------------------
+    # åˆå§‹åŒ–æ—¶ç¬¬iç±»åªåŒ…æ‹¬ç¬¬iä¸ªæ•°æ®ï¼Œç¬¬iä¸ªæ•°æ®çš„æ•°æ®æ ‡ç­¾ä¸ºç¬¬iç±»
     for i in range(dataLen):
-        c[i] = [i]  # Àà±àºÅ(ÕûÊý±àºÅ)£¬°üº¬µÄÁ÷±àºÅ
-        l.append(i)  # Á÷µÄÀà±êÇ©
+        c[i] = [i]  # ç±»ç¼–å·(æ•´æ•°ç¼–å·)ï¼ŒåŒ…å«çš„æµç¼–å·
+        l.append(i)  # æµçš„ç±»æ ‡ç­¾
 
     print('start clustering...')
     st = time.clock()
@@ -161,10 +161,10 @@ if __name__ == '__main__':
             print(i, '%.2f' % ((et-st)/60.0), 'mins')
             st = et
         
-        knn = KNN(i, K) #¼ÆËãk½üÁÚµã
+        knn = KNN(i, K) #è®¡ç®—kè¿‘é‚»ç‚¹
 
         for j in knn:
-            if l[i] != l[j]: #Èç¹ûµÚiÌõÁ÷ºÍµÚjÌõÁ÷²»ÊôÓÚÍ¬Ò»Àà
+            if l[i] != l[j]: #å¦‚æžœç¬¬iæ¡æµå’Œç¬¬jæ¡æµä¸å±žäºŽåŒä¸€ç±»
                 if not (clusterSim(c[l[i]], c[l[j]], data, alpha) > 1):
                     merge(c, l[i], l[j], l)
               

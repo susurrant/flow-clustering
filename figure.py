@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def figure7a():
     sns.set(style="ticks")
 
@@ -47,6 +48,7 @@ def figure7a():
 
     plt.show()
 
+
 def figure7b():
     sns.set(style="ticks")
 
@@ -90,6 +92,7 @@ def figure7b():
 
     plt.show()
 
+
 def figure9():
     sns.set(style="whitegrid")
     clusterID = [318, 151]
@@ -97,7 +100,7 @@ def figure9():
     clen = len(clusterID)
     ts = [[0 for i in range(clen)] for j in range(24 * 60)]
 
-    with open('./spatial clustering results/s_ld(May 13) 25 0.25.csv', 'r') as f:
+    with open('./data/spatial clustering results/s_ld(May 13) 25 0.25.csv', 'r') as f:
         f.readline()
         while True:
             line = f.readline().strip()
@@ -151,6 +154,7 @@ def figure9():
 
     plt.show()
 
+
 def figure10():
     sns.set_style("whitegrid")
 
@@ -188,78 +192,5 @@ def figure10():
     plt.show()
 
 
-def figure11a():
-    sns.set(style="whitegrid")
-
-    x = [i for i in range(0, 75)] #改动
-    d = {}
-    with open('./temporal clustering results/st_c(May 13) 25 0.25 c318 0.5.csv', 'r') as f:  #改动
-        lines = f.readlines()
-        del lines[0]
-        for line in lines:
-            sl = line.strip().split(',')
-            if int(sl[-1]) not in d:
-                d[int(sl[-1])] = 0
-            d[int(sl[-1])] += 1
-
-    y318 = [0]*len(x)
-
-    for fn, c in d.items():
-        y318[fn] = c
-    sumy = float(sum(y318))
-    for i in range(len(y318)):
-        y318[i] /= sumy
-    y318 = np.array(y318)
-
-    d = {}
-    with open('./temporal clustering results/st_c(May 13) 25 0.25 c151 0.5.csv', 'r') as f:  #改动
-        lines = f.readlines()
-        del lines[0]
-        for line in lines:
-            sl = line.strip().split(',')
-            if int(sl[-1]) not in d:
-                d[int(sl[-1])] = 0
-            d[int(sl[-1])] += 1
-    y151 = [0]*len(x)
-    for fn, c in d.items():
-        y151[fn] = c
-    sumy = float(sum(y151))
-    for i in range(len(y151)):
-        y151[i] /= sumy
-    y151 = np.array(y151)
-
-
-    x = np.array(x)
-    c1 = '#f08080'
-    c2 = '#00e079'
-    fs1 = 16
-    fs2 = 14
-
-    fig, ax = plt.subplots(figsize=(7.3, 9.49))
-    ax.set_xlabel('Proportion', fontname="Times New Roman", fontsize=fs1)
-    ax.set_ylabel('# of flows in a temporal cluster', fontname="Times New Roman", fontsize=fs1)
-
-    l1 = ax.barh(x-0.5, y318, facecolor=c1, height=0.5, label='#318')
-    l2 = ax.barh(x, y151, facecolor=c2, height=0.5, label='#151')
-
-    ax.set_ylim(0, 75) #改动
-    ys = [i for i in range(0, 76, 15)] #改动
-    ax.set_yticks(ys)
-    ylabels = [str(item) for item in ys]
-    ax.yaxis.set_ticklabels(ylabels, fontname="Times New Roman", fontsize=fs2)
-
-    ax.set_xlim(0, 0.25)
-    xs = [0.0,0.05,0.1,0.15,0.2,0.25]
-    ax.set_xticks(xs)
-    xlabels = [str(abs(item)) for item in xs]
-    ax.xaxis.set_ticklabels(xlabels, fontname="Times New Roman", fontsize=fs2)
-
-    leg = plt.legend(handles=[l1, l2])
-    for l in leg.get_texts():
-        l.set_fontsize(12)
-        l.set_fontname("Times New Roman")
-    plt.show()
-
-
 if __name__ == '__main__':
-    figure7b()
+    figure10()

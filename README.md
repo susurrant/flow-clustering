@@ -13,9 +13,9 @@ Python version: 3.5 (some codes were written using 2.7)</br>
 > Xin Yao, Di Zhu, Yong Gao, *et al.*, 2018, IEEE Access</br>
 
 ## Method
-- Spatial similarity: (a) Flows are in spatial proximity to each other. (b) Flow directions are approximately equivalent. (c) Flow lengths are similar.</br>
-- Temporal Similarity: Two flows are more temporally similar if the periods during which they occur overlap more.</br>
-- Algorithms: We use a two-step clustering strategy in which spatial clustering is conducted before temporal clustering. An agglomerative clustering framework is adopted to implement flow clustering, which merges flows to form a hierarchy of flow clusters.</br>
+- **Spatial similarity:** (a) Flows are in spatial proximity to each other. (b) Flow directions are approximately equivalent. (c) Flow lengths are similar.</br>
+- **Temporal Similarity:** Two flows are more temporally similar if the periods during which they occur overlap more.</br>
+- **Algorithms:** We use a two-step clustering strategy in which spatial clustering is conducted before temporal clustering. An agglomerative clustering framework is adopted to implement flow clustering, which merges flows to form a hierarchy of flow clusters.</br>
 
 ## Example
 We apply the method to Beijing taxi trip data, which contains valid 266,817 records from 17,397 different taxis on May 13, 2013. </br>

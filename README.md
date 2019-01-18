@@ -1,4 +1,5 @@
 # flow-clustering
+A stepwise spatio-temporal flow clustering method for discovering mobility trends
 
 ## Description
 Flow clustering, which summarizes individual flows into aggregate flows, can help to discover human mobility patterns. Existing flow clustering methods ignore the geometric properties of flows and do not consider their temporal information. This research</br>
@@ -10,7 +11,7 @@ Python version: 3.5 (some codes were written using 2.7)</br>
 
 ## Reference
 > [A Stepwise Spatio-Temporal Flow Clustering Method for Discovering Mobility Trends](https://ieeexplore.ieee.org/document/8432425/)</br>
-> Xin Yao, Di Zhu, Yong Gao, *et al.*, 2018, IEEE Access</br>
+> Xin Yao, Di Zhu, Yong Gao, Lun Wu, Pengcheng Zhang, Yu Liu, 2018, IEEE Access</br>
 
 ## Method
 - **Spatial similarity:** (a) Flows are in spatial proximity to each other. (b) Flow directions are approximately equivalent. (c) Flow lengths are similar.</br>

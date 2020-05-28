@@ -8,6 +8,7 @@ __pycache__/
 
 data/
 map/
+st-similarity test/
 
 # C extensions
 *.so
